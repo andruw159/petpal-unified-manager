@@ -13,12 +13,32 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        'poppins': ['Poppins', 'sans-serif'],
+        'roboto': ['Roboto', 'sans-serif'],
+      },
+      fontSize: {
+        'pet-h1': '2.5rem',
+        'pet-h2': '2rem', 
+        'pet-h3': '1.5rem',
+        'pet-p': '1rem',
+        'pet-btn': '1.125rem',
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        
+        /* PetManager Brand Colors */
+        'pet-primary': 'hsl(var(--pet-primary))',
+        'pet-secondary': 'hsl(var(--pet-secondary))', 
+        'pet-accent': 'hsl(var(--pet-accent))',
+        'pet-background': 'hsl(var(--pet-background))',
+        'pet-text-primary': 'hsl(var(--pet-text-primary))',
+        'pet-text-secondary': 'hsl(var(--pet-text-secondary))',
+        
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
