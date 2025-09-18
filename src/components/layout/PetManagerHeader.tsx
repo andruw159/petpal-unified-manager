@@ -1,4 +1,5 @@
-import { Bell, Search, User, Menu } from "lucide-react";
+import { useState } from "react";
+import { Bell, Search, User, Menu, LogOut, Settings, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -10,8 +11,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LogoutConfirmDialog } from "./LogoutConfirmDialog";
+import { useNavigate } from "react-router-dom";
 
 export function PetManagerHeader() {
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    setShowLogoutDialog(false);
+    navigate("/login");
+  };
+
   return (
     <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
       <div className="flex items-center justify-between h-full px-4">
@@ -42,19 +53,36 @@ export function PetManagerHeader() {
                 <span className="font-roboto">Admin</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuLabel className="font-poppins">Mi Cuenta</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Perfil</DropdownMenuItem>
-              <DropdownMenuItem>Configuración</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">
+            <DropdownMenuContent align="end" className="w-48 bg-card border-border shadow-lg">
+              <DropdownMenuLabel className="font-poppins text-card-foreground">Mi Cuenta</DropdownMenuLabel>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem className="font-roboto text-card-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                <UserIcon className="h-4 w-4 mr-2" />
+                Perfil
+              </DropdownMenuItem>
+              <DropdownMenuItem className="font-roboto text-card-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                <Settings className="h-4 w-4 mr-2" />
+                Configuración
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem 
+                className="font-roboto text-destructive hover:bg-destructive/10 hover:text-destructive cursor-pointer"
+                onClick={() => setShowLogoutDialog(true)}
+              >
+                <LogOut className="h-4 w-4 mr-2" />
                 Cerrar Sesión
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutDialog}
+        onOpenChange={setShowLogoutDialog}
+        onConfirm={handleLogout}
+      />
     </header>
   );
 }

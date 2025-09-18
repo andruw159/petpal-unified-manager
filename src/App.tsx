@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { PetManagerLayout } from "./components/layout/PetManagerLayout";
 import PetManagerDashboard from "./pages/PetManagerDashboard";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -15,13 +16,21 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <PetManagerLayout>
-          <Routes>
-            <Route path="/" element={<PetManagerDashboard />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </PetManagerLayout>
+        <Routes>
+          {/* Login route - no layout */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Main app routes - with layout */}
+          <Route path="/*" element={
+            <PetManagerLayout>
+              <Routes>
+                <Route path="/" element={<PetManagerDashboard />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </PetManagerLayout>
+          } />
+        </Routes>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
