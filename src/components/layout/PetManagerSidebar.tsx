@@ -25,7 +25,7 @@ import {
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "Ventas", url: "/ventas", icon: ShoppingCart },
-  { title: "Compras", url: "/compras", icon: ShoppingBag },
+  { title: "Compras", url: "/consultar-compras", icon: ShoppingBag },
   { title: "Crear Compra", url: "/crear-compra", icon: Package },
   { title: "Inventario", url: "/inventario", icon: TrendingUp },
   { title: "Reportes", url: "/reportes", icon: BarChart3 },
