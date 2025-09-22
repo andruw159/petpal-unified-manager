@@ -85,7 +85,7 @@ export function PetManagerSidebar() {
                     >
                       <item.icon className="h-5 w-5" />
                       {!isCollapsed && (
-                        <span className="font-roboto font-medium text-pet-btn">
+                        <span className="font-roboto font-medium text-foreground">
                           {item.title}
                         </span>
                       )}
