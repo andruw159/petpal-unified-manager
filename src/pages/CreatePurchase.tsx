@@ -26,39 +26,39 @@ interface Purchase {
 const mockRecentPurchases: Purchase[] = [
   {
     id: "1",
-    product: "Laptop Dell Inspiron",
-    quantity: 5,
-    unitPrice: 3000000,
-    total: 15000000,
+    product: "Alimento Premium para Perro Royal Canin 15kg",
+    quantity: 12,
+    unitPrice: 180000,
+    total: 2160000,
     date: "2024-01-15",
-    supplier: "TechDistribuciones"
+    supplier: "Pet Supply Co."
   },
   {
     id: "2",
-    product: "Monitor Samsung 24\"",
-    quantity: 8,
-    unitPrice: 800000,
-    total: 6400000,
+    product: "Juguete Kong Classic Mediano",
+    quantity: 24,
+    unitPrice: 45000,
+    total: 1080000,
     date: "2024-01-12",
-    supplier: "ElectroSuministros"
+    supplier: "Mascotas Premium"
   },
   {
     id: "3",
-    product: "Teclado Mecánico",
-    quantity: 15,
-    unitPrice: 250000,
-    total: 3750000,
+    product: "Collar LED Recargable para Perro",
+    quantity: 18,
+    unitPrice: 35000,
+    total: 630000,
     date: "2024-01-10",
-    supplier: "PerifericosPlus"
+    supplier: "Distribuidora Animal Care"
   }
 ];
 
 const suppliers = [
-  "TechDistribuciones",
-  "ElectroSuministros", 
-  "PerifericosPlus",
-  "InnovaTech",
-  "DigitalSupplier"
+  "Pet Supply Co.",
+  "Mascotas Premium", 
+  "Distribuidora Animal Care",
+  "VetSupplies",
+  "PetWorld Mayorista"
 ];
 
 export default function CreatePurchase() {
@@ -157,7 +157,7 @@ export default function CreatePurchase() {
                       </Label>
                       <Input
                         id="product"
-                        placeholder="Ej: Laptop Dell Inspiron"
+                        placeholder="Ej: Alimento Premium para Perro Royal Canin 15kg"
                         value={formData.product}
                         onChange={(e) => handleInputChange("product", e.target.value)}
                         className="h-12 border-pet-secondary/30 focus:border-pet-accent rounded-lg shadow-sm"
@@ -207,7 +207,7 @@ export default function CreatePurchase() {
                       <Input
                         id="unitPrice"
                         type="number"
-                        placeholder="3000000"
+                        placeholder="180000"
                         min="0"
                         step="1000"
                         value={formData.unitPrice}
