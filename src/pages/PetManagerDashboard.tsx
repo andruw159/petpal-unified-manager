@@ -83,9 +83,24 @@ export default function PetManagerDashboard() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Quick Actions */}
+        {/* Sales Chart Placeholder */}
         <div className="lg:col-span-1">
-          <QuickActions />
+          <Card className="pet-card">
+            <CardHeader>
+              <CardTitle className="font-poppins text-pet-h3 flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Tendencia de Ventas
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="h-64 flex items-center justify-center text-muted-foreground">
+                <div className="text-center">
+                  <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="font-roboto">Gráfico de ventas próximamente</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Transactions */}
@@ -96,6 +111,11 @@ export default function PetManagerDashboard() {
 
       {/* Bottom Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Actions */}
+        <div>
+          <QuickActions />
+        </div>
+
         {/* Low Stock Alert */}
         <Card className="pet-card">
           <CardHeader>
@@ -120,24 +140,6 @@ export default function PetManagerDashboard() {
                   />
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Sales Chart Placeholder */}
-        <Card className="pet-card">
-          <CardHeader>
-            <CardTitle className="font-poppins text-pet-h3 flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-primary" />
-              Tendencia de Ventas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="font-roboto">Gráfico de ventas próximamente</p>
-              </div>
             </div>
           </CardContent>
         </Card>
