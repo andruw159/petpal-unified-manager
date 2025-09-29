@@ -7,6 +7,7 @@ import { PetManagerLayout } from "./components/layout/PetManagerLayout";
 import PetManagerDashboard from "./pages/PetManagerDashboard";
 import CreatePurchase from "./pages/CreatePurchase";
 import ConsultPurchases from "./pages/ConsultPurchases";
+import RolePermissionsControl from "./pages/RolePermissionsControl";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -29,6 +30,7 @@ const App = () => (
                 <Route path="/" element={<PetManagerDashboard />} />
                 <Route path="/crear-compra" element={<CreatePurchase />} />
                 <Route path="/consultar-compras" element={<ConsultPurchases />} />
+                <Route path="/control-permisos" element={<RolePermissionsControl />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

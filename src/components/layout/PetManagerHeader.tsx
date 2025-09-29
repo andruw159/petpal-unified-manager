@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, Search, User, Menu, LogOut, Settings, UserIcon } from "lucide-react";
+import { Bell, Search, User, Menu, LogOut, Settings, UserIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -63,6 +63,14 @@ export function PetManagerHeader() {
               <DropdownMenuItem className="font-roboto text-card-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer">
                 <Settings className="h-4 w-4 mr-2" />
                 Configuración
+              </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-border" />
+              <DropdownMenuItem 
+                className="font-roboto text-card-foreground hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                onClick={() => navigate("/control-permisos")}
+              >
+                <ShieldCheck className="h-4 w-4 mr-2" />
+                Control de Permisos de Rol
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border" />
               <DropdownMenuItem 
