@@ -7,9 +7,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { CalendarIcon, Search, Filter } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { CalendarIcon, Search, Filter, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface Purchase {
   id: string;
@@ -105,10 +108,24 @@ const suppliers = [
 ];
 
 export default function ConsultPurchases() {
+  const [purchases, setPurchases] = useState<Purchase[]>(mockPurchases);
   const [filteredPurchases, setFilteredPurchases] = useState<Purchase[]>(mockPurchases);
   const [selectedSupplier, setSelectedSupplier] = useState<string>("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [editForm, setEditForm] = useState<Purchase>({
+    id: "",
+    product: "",
+    quantity: 0,
+    unitPrice: 0,
+    total: 0,
+    date: "",
+    supplier: ""
+  });
+  const { toast } = useToast();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -119,7 +136,7 @@ export default function ConsultPurchases() {
   };
 
   const handleFilter = () => {
-    let filtered = [...mockPurchases];
+    let filtered = [...purchases];
 
     // Filter by supplier
     if (selectedSupplier) {
@@ -142,7 +159,69 @@ export default function ConsultPurchases() {
     setSelectedSupplier("");
     setStartDate(undefined);
     setEndDate(undefined);
-    setFilteredPurchases(mockPurchases);
+    setFilteredPurchases(purchases);
+  };
+
+  const handleEditClick = (purchase: Purchase) => {
+    setSelectedPurchase(purchase);
+    setEditForm(purchase);
+    setEditDialogOpen(true);
+  };
+
+  const handleDeleteClick = (purchase: Purchase) => {
+    setSelectedPurchase(purchase);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (selectedPurchase) {
+      const updatedPurchases = purchases.filter(p => p.id !== selectedPurchase.id);
+      setPurchases(updatedPurchases);
+      
+      // Update filtered purchases
+      const updatedFiltered = filteredPurchases.filter(p => p.id !== selectedPurchase.id);
+      setFilteredPurchases(updatedFiltered);
+      
+      toast({
+        title: "Compra eliminada",
+        description: "La compra ha sido eliminada exitosamente.",
+      });
+      setDeleteDialogOpen(false);
+      setSelectedPurchase(null);
+    }
+  };
+
+  const handleEditSubmit = () => {
+    if (selectedPurchase) {
+      const updatedPurchases = purchases.map(p => 
+        p.id === selectedPurchase.id ? editForm : p
+      );
+      setPurchases(updatedPurchases);
+      
+      // Update filtered purchases
+      const updatedFiltered = filteredPurchases.map(p => 
+        p.id === selectedPurchase.id ? editForm : p
+      );
+      setFilteredPurchases(updatedFiltered);
+      
+      toast({
+        title: "Compra actualizada",
+        description: "La compra ha sido actualizada exitosamente.",
+      });
+      setEditDialogOpen(false);
+      setSelectedPurchase(null);
+    }
+  };
+
+  const handleEditFormChange = (field: keyof Purchase, value: string | number) => {
+    const updatedForm = { ...editForm, [field]: value };
+    
+    // Auto-calculate total when quantity or unitPrice changes
+    if (field === 'quantity' || field === 'unitPrice') {
+      updatedForm.total = updatedForm.quantity * updatedForm.unitPrice;
+    }
+    
+    setEditForm(updatedForm);
   };
 
   const totalAmount = filteredPurchases.reduce((sum, purchase) => sum + purchase.total, 0);
@@ -310,6 +389,7 @@ export default function ConsultPurchases() {
                     <TableHead className="font-semibold text-right">Precio Unitario</TableHead>
                     <TableHead className="font-semibold text-right">Total</TableHead>
                     <TableHead className="font-semibold text-center">Fecha</TableHead>
+                    <TableHead className="font-semibold text-center">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -328,11 +408,31 @@ export default function ConsultPurchases() {
                         <TableCell className="text-center">
                           {format(new Date(purchase.date), "dd/MM/yyyy")}
                         </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEditClick(purchase)}
+                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDeleteClick(purchase)}
+                              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                         No se encontraron compras con los filtros aplicados
                       </TableCell>
                     </TableRow>
@@ -343,6 +443,131 @@ export default function ConsultPurchases() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Modificar Compra</DialogTitle>
+            <DialogDescription>
+              Edita los detalles de la compra. El total se calculará automáticamente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-product">Producto</Label>
+              <Input
+                id="edit-product"
+                value={editForm.product}
+                onChange={(e) => handleEditFormChange('product', e.target.value)}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-supplier">Proveedor</Label>
+                <Select 
+                  value={editForm.supplier} 
+                  onValueChange={(value) => handleEditFormChange('supplier', value)}
+                >
+                  <SelectTrigger id="edit-supplier">
+                    <SelectValue placeholder="Seleccionar proveedor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier} value={supplier}>
+                        {supplier}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-date">Fecha</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editForm.date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editForm.date ? format(new Date(editForm.date), "dd/MM/yyyy") : "Seleccionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editForm.date ? new Date(editForm.date) : undefined}
+                      onSelect={(date) => handleEditFormChange('date', date ? format(date, "yyyy-MM-dd") : "")}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-quantity">Cantidad</Label>
+                <Input
+                  id="edit-quantity"
+                  type="number"
+                  value={editForm.quantity}
+                  onChange={(e) => handleEditFormChange('quantity', parseInt(e.target.value) || 0)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-unitPrice">Precio Unitario</Label>
+                <Input
+                  id="edit-unitPrice"
+                  type="number"
+                  value={editForm.unitPrice}
+                  onChange={(e) => handleEditFormChange('unitPrice', parseInt(e.target.value) || 0)}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-total">Total</Label>
+              <Input
+                id="edit-total"
+                type="text"
+                value={formatCurrency(editForm.total)}
+                disabled
+                className="bg-muted"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleEditSubmit}>
+              Guardar Cambios
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción no se puede deshacer. Se eliminará permanentemente la compra de:
+              <span className="font-semibold block mt-2">{selectedPurchase?.product}</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90">
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
