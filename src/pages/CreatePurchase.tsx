@@ -141,9 +141,9 @@ export default function CreatePurchase() {
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Form Section */}
           <div className="xl:col-span-2">
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
-              <CardHeader className="bg-gradient-to-r from-pet-primary/10 to-pet-secondary/20 rounded-t-lg">
-                <CardTitle className="text-2xl font-bold text-pet-text-primary">
+            <Card className="shadow-lg border-0 bg-card backdrop-blur-sm">
+              <CardHeader className="bg-muted rounded-t-lg">
+                <CardTitle className="text-2xl font-bold text-card-foreground">
                   Información de la Compra
                 </CardTitle>
               </CardHeader>
@@ -152,7 +152,7 @@ export default function CreatePurchase() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Producto */}
                     <div className="space-y-2">
-                      <Label htmlFor="product" className="text-pet-text-primary font-medium text-base">
+                      <Label htmlFor="product" className="text-foreground font-medium text-base">
                         Producto *
                       </Label>
                       <Input
@@ -160,17 +160,17 @@ export default function CreatePurchase() {
                         placeholder="Ej: Alimento Premium para Perro Royal Canin 15kg"
                         value={formData.product}
                         onChange={(e) => handleInputChange("product", e.target.value)}
-                        className="h-12 border-pet-secondary/30 focus:border-pet-accent rounded-lg shadow-sm"
+                        className="h-12 rounded-lg shadow-sm"
                       />
                     </div>
 
                     {/* Proveedor */}
                     <div className="space-y-2">
-                      <Label htmlFor="supplier" className="text-pet-text-primary font-medium text-base">
+                      <Label htmlFor="supplier" className="text-foreground font-medium text-base">
                         Proveedor *
                       </Label>
                       <Select value={formData.supplier} onValueChange={(value) => handleInputChange("supplier", value)}>
-                        <SelectTrigger className="h-12 border-pet-secondary/30 focus:border-pet-accent rounded-lg shadow-sm">
+                        <SelectTrigger className="h-12 rounded-lg shadow-sm">
                           <SelectValue placeholder="Seleccionar proveedor" />
                         </SelectTrigger>
                         <SelectContent>
@@ -185,7 +185,7 @@ export default function CreatePurchase() {
 
                     {/* Cantidad */}
                     <div className="space-y-2">
-                      <Label htmlFor="quantity" className="text-pet-text-primary font-medium text-base">
+                      <Label htmlFor="quantity" className="text-foreground font-medium text-base">
                         Cantidad *
                       </Label>
                       <Input
@@ -195,13 +195,13 @@ export default function CreatePurchase() {
                         min="1"
                         value={formData.quantity}
                         onChange={(e) => handleInputChange("quantity", e.target.value)}
-                        className="h-12 border-pet-secondary/30 focus:border-pet-accent rounded-lg shadow-sm"
+                        className="h-12 rounded-lg shadow-sm"
                       />
                     </div>
 
                     {/* Precio Unitario */}
                     <div className="space-y-2">
-                      <Label htmlFor="unitPrice" className="text-pet-text-primary font-medium text-base">
+                      <Label htmlFor="unitPrice" className="text-foreground font-medium text-base">
                         Precio Unitario (COP) *
                       </Label>
                       <Input
@@ -212,13 +212,13 @@ export default function CreatePurchase() {
                         step="1000"
                         value={formData.unitPrice}
                         onChange={(e) => handleInputChange("unitPrice", e.target.value)}
-                        className="h-12 border-pet-secondary/30 focus:border-pet-accent rounded-lg shadow-sm"
+                        className="h-12 rounded-lg shadow-sm"
                       />
                     </div>
 
                     {/* Fecha de Compra */}
                     <div className="space-y-2 md:col-span-1">
-                      <Label className="text-pet-text-primary font-medium text-base">
+                      <Label className="text-foreground font-medium text-base">
                         Fecha de Compra *
                       </Label>
                       <Popover>
@@ -226,7 +226,7 @@ export default function CreatePurchase() {
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full h-12 justify-start text-left font-normal border-pet-secondary/30 hover:border-pet-accent rounded-lg shadow-sm",
+                              "w-full h-12 justify-start text-left font-normal rounded-lg shadow-sm",
                               !formData.date && "text-muted-foreground"
                             )}
                           >
@@ -248,10 +248,10 @@ export default function CreatePurchase() {
 
                     {/* Total Calculado */}
                     <div className="space-y-2">
-                      <Label className="text-pet-text-primary font-medium text-base">
+                      <Label className="text-foreground font-medium text-base">
                         Total Calculado
                       </Label>
-                      <div className="h-12 px-4 py-2 bg-pet-secondary/30 border border-pet-secondary/50 rounded-lg flex items-center text-pet-text-primary font-semibold text-lg">
+                      <div className="h-12 px-4 py-2 bg-muted border border-border rounded-lg flex items-center text-foreground font-semibold text-lg">
                         {formatCurrency(calculateTotal())}
                       </div>
                     </div>
@@ -261,7 +261,7 @@ export default function CreatePurchase() {
                   <div className="flex flex-col sm:flex-row gap-4 pt-6">
                     <Button
                       type="submit"
-                      className="flex-1 h-12 bg-pet-accent hover:bg-pet-accent/90 text-white font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                      className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                     >
                       Guardar Compra
                     </Button>
@@ -269,7 +269,7 @@ export default function CreatePurchase() {
                       type="button"
                       variant="outline"
                       onClick={handleCancel}
-                      className="flex-1 h-12 border-pet-secondary hover:bg-pet-secondary/20 text-pet-text-primary font-medium text-lg rounded-lg"
+                      className="flex-1 h-12 font-medium text-lg rounded-lg"
                     >
                       Cancelar
                     </Button>
@@ -281,36 +281,36 @@ export default function CreatePurchase() {
 
           {/* Recent Purchases Table */}
           <div className="xl:col-span-1">
-            <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm h-fit">
-              <CardHeader className="bg-gradient-to-r from-pet-primary/10 to-pet-secondary/20 rounded-t-lg">
-                <CardTitle className="text-xl font-bold text-pet-text-primary">
+            <Card className="shadow-lg border-0 bg-card backdrop-blur-sm h-fit">
+              <CardHeader className="bg-muted rounded-t-lg">
+                <CardTitle className="text-xl font-bold text-card-foreground">
                   Últimas Compras
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="overflow-hidden rounded-lg border border-pet-secondary/20">
+                <div className="overflow-hidden rounded-lg border border-border">
                   <Table>
                     <TableHeader>
-                      <TableRow className="bg-pet-secondary/30">
-                        <TableHead className="font-semibold text-pet-text-primary">Producto</TableHead>
-                        <TableHead className="font-semibold text-pet-text-primary">Cantidad</TableHead>
-                        <TableHead className="font-semibold text-pet-text-primary">Total</TableHead>
-                        <TableHead className="font-semibold text-pet-text-primary">Fecha</TableHead>
+                      <TableRow className="bg-muted">
+                        <TableHead className="font-semibold text-foreground">Producto</TableHead>
+                        <TableHead className="font-semibold text-foreground">Cantidad</TableHead>
+                        <TableHead className="font-semibold text-foreground">Total</TableHead>
+                        <TableHead className="font-semibold text-foreground">Fecha</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {mockRecentPurchases.map((purchase) => (
-                        <TableRow key={purchase.id} className="hover:bg-pet-secondary/10 transition-colors">
-                          <TableCell className="font-medium text-pet-text-primary">
+                        <TableRow key={purchase.id} className="hover:bg-muted/50 transition-colors">
+                          <TableCell className="font-medium text-foreground">
                             {purchase.product}
                           </TableCell>
-                          <TableCell className="text-pet-text-secondary">
+                          <TableCell className="text-muted-foreground">
                             {purchase.quantity}
                           </TableCell>
-                          <TableCell className="text-pet-text-secondary font-medium">
+                          <TableCell className="text-muted-foreground font-medium">
                             {formatCurrency(purchase.total)}
                           </TableCell>
-                          <TableCell className="text-pet-text-secondary text-sm">
+                          <TableCell className="text-muted-foreground text-sm">
                             {format(new Date(purchase.date), "dd/MM/yyyy")}
                           </TableCell>
                         </TableRow>
