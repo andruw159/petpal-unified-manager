@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,35 +23,14 @@ interface Sale {
   customer: string;
 }
 
-const mockRecentSales: Sale[] = [
-  {
-    id: "1",
-    product: "Alimento Premium para Perro Royal Canin 15kg",
-    quantity: 2,
-    unitPrice: 250000,
-    total: 500000,
-    date: "2024-01-15",
-    customer: "Carlos Rodríguez"
-  },
-  {
-    id: "2",
-    product: "Juguete Kong Classic Mediano",
-    quantity: 1,
-    unitPrice: 65000,
-    total: 65000,
-    date: "2024-01-14",
-    customer: "María González"
-  },
-  {
-    id: "3",
-    product: "Collar LED Recargable para Perro",
-    quantity: 1,
-    unitPrice: 55000,
-    total: 55000,
-    date: "2024-01-13",
-    customer: "Jorge Martínez"
+const getStoredSales = (): Sale[] => {
+  try {
+    const stored = localStorage.getItem('sales');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
   }
-];
+};
 
 const customers = [
   "Carlos Rodríguez",
@@ -63,6 +42,7 @@ const customers = [
 
 export default function CreateSale() {
   const navigate = useNavigate();
+  const [recentSales, setRecentSales] = useState<Sale[]>([]);
   const [formData, setFormData] = useState({
     product: "",
     quantity: "",
@@ -70,6 +50,11 @@ export default function CreateSale() {
     customer: "",
     date: undefined as Date | undefined
   });
+
+  useEffect(() => {
+    const sales = getStoredSales();
+    setRecentSales(sales.slice(0, 3));
+  }, []);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -94,6 +79,25 @@ export default function CreateSale() {
     const total = calculateTotal();
     const HIGH_VOLUME_THRESHOLD = 3000000;
 
+    // Create new sale
+    const newSale: Sale = {
+      id: Date.now().toString(),
+      product: formData.product,
+      quantity: parseFloat(formData.quantity),
+      unitPrice: parseFloat(formData.unitPrice),
+      total: total,
+      date: format(formData.date, "yyyy-MM-dd"),
+      customer: formData.customer
+    };
+
+    // Save to localStorage
+    const existingSales = getStoredSales();
+    const updatedSales = [newSale, ...existingSales];
+    localStorage.setItem('sales', JSON.stringify(updatedSales));
+    
+    // Update recent sales display
+    setRecentSales(updatedSales.slice(0, 3));
+
     // Check if it's a high-volume sale
     if (total > HIGH_VOLUME_THRESHOLD) {
       toast({
@@ -103,7 +107,7 @@ export default function CreateSale() {
       });
     }
 
-    // Simulate saving sale
+    // Success message
     toast({
       title: "Venta creada",
       description: `Venta de ${formData.product} registrada exitosamente`,
@@ -311,7 +315,14 @@ export default function CreateSale() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {mockRecentSales.map((sale) => (
+                      {recentSales.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                            No hay ventas registradas aún
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        recentSales.map((sale) => (
                         <TableRow key={sale.id} className="hover:bg-muted/50 transition-colors">
                           <TableCell className="font-medium text-foreground">
                             {sale.product}
@@ -326,7 +337,7 @@ export default function CreateSale() {
                             {format(new Date(sale.date), "dd/MM/yyyy")}
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )))}
                     </TableBody>
                   </Table>
                 </div>
