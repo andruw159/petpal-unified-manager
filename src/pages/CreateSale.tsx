@@ -91,6 +91,18 @@ export default function CreateSale() {
       return;
     }
 
+    const total = calculateTotal();
+    const HIGH_VOLUME_THRESHOLD = 3000000;
+
+    // Check if it's a high-volume sale
+    if (total > HIGH_VOLUME_THRESHOLD) {
+      toast({
+        title: "⚠️ Venta de Alto Volumen Detectada",
+        description: `Esta venta por valor de ${formatCurrency(total)} será notificada al gerente vía Gmail como venta prioritaria.`,
+        duration: 6000,
+      });
+    }
+
     // Simulate saving sale
     toast({
       title: "Venta creada",
