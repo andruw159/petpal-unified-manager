@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -24,80 +24,14 @@ interface Sale {
   customer: string;
 }
 
-const mockSales: Sale[] = [
-  {
-    id: "1",
-    product: "Alimento Premium para Perro Royal Canin 15kg",
-    quantity: 2,
-    unitPrice: 250000,
-    total: 500000,
-    date: "2024-01-15",
-    customer: "Carlos Rodríguez"
-  },
-  {
-    id: "2",
-    product: "Juguete Kong Classic Mediano",
-    quantity: 1,
-    unitPrice: 65000,
-    total: 65000,
-    date: "2024-01-14",
-    customer: "María González"
-  },
-  {
-    id: "3",
-    product: "Collar LED Recargable para Perro",
-    quantity: 1,
-    unitPrice: 55000,
-    total: 55000,
-    date: "2024-01-13",
-    customer: "Jorge Martínez"
-  },
-  {
-    id: "4",
-    product: "Arena Sanitaria para Gato Fresh Step 20kg",
-    quantity: 3,
-    unitPrice: 95000,
-    total: 285000,
-    date: "2024-01-12",
-    customer: "Ana Pérez"
-  },
-  {
-    id: "5",
-    product: "Correa Retráctil Flexi 5m",
-    quantity: 1,
-    unitPrice: 120000,
-    total: 120000,
-    date: "2024-01-11",
-    customer: "Luis Torres"
-  },
-  {
-    id: "6",
-    product: "Snacks Dentales para Perro Pedigree",
-    quantity: 5,
-    unitPrice: 35000,
-    total: 175000,
-    date: "2024-01-10",
-    customer: "Carlos Rodríguez"
-  },
-  {
-    id: "7",
-    product: "Transportadora Plástica Grande",
-    quantity: 1,
-    unitPrice: 180000,
-    total: 180000,
-    date: "2024-01-08",
-    customer: "María González"
-  },
-  {
-    id: "8",
-    product: "Vitaminas para Gato Whiskas",
-    quantity: 2,
-    unitPrice: 42000,
-    total: 84000,
-    date: "2024-01-07",
-    customer: "Jorge Martínez"
+const getStoredSales = (): Sale[] => {
+  try {
+    const stored = localStorage.getItem('sales');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
   }
-];
+};
 
 const customers = [
   "Carlos Rodríguez",
@@ -108,8 +42,8 @@ const customers = [
 ];
 
 export default function ConsultSales() {
-  const [sales, setSales] = useState<Sale[]>(mockSales);
-  const [filteredSales, setFilteredSales] = useState<Sale[]>(mockSales);
+  const [sales, setSales] = useState<Sale[]>([]);
+  const [filteredSales, setFilteredSales] = useState<Sale[]>([]);
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
@@ -126,6 +60,20 @@ export default function ConsultSales() {
     customer: ""
   });
   const { toast } = useToast();
+
+  useEffect(() => {
+    const loadSales = () => {
+      const storedSales = getStoredSales();
+      setSales(storedSales);
+      setFilteredSales(storedSales);
+    };
+    
+    loadSales();
+    
+    // Reload sales when window gains focus (in case sales were added in another tab/page)
+    window.addEventListener('focus', loadSales);
+    return () => window.removeEventListener('focus', loadSales);
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -177,6 +125,7 @@ export default function ConsultSales() {
     if (selectedSale) {
       const updatedSales = sales.filter(s => s.id !== selectedSale.id);
       setSales(updatedSales);
+      localStorage.setItem('sales', JSON.stringify(updatedSales));
       
       // Update filtered sales
       const updatedFiltered = filteredSales.filter(s => s.id !== selectedSale.id);
@@ -197,6 +146,7 @@ export default function ConsultSales() {
         s.id === selectedSale.id ? editForm : s
       );
       setSales(updatedSales);
+      localStorage.setItem('sales', JSON.stringify(updatedSales));
       
       // Update filtered sales
       const updatedFiltered = filteredSales.map(s => 
