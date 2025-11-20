@@ -98,20 +98,22 @@ export default function CreateSale() {
     // Update recent sales display
     setRecentSales(updatedSales.slice(0, 3));
 
-    // Check if it's a high-volume sale
-    if (total > HIGH_VOLUME_THRESHOLD) {
-      toast({
-        title: "⚠️ Venta de Alto Volumen Detectada",
-        description: `Esta venta por valor de ${formatCurrency(total)} será notificada al gerente vía Gmail como venta prioritaria.`,
-        duration: 6000,
-      });
-    }
-
     // Success message
     toast({
       title: "Venta creada",
       description: `Venta de ${formData.product} registrada exitosamente`,
     });
+
+    // Check if it's a high-volume sale and show additional notification
+    if (total > HIGH_VOLUME_THRESHOLD) {
+      setTimeout(() => {
+        toast({
+          title: "⚠️ Venta de Alto Volumen Detectada",
+          description: `Esta venta por valor de ${formatCurrency(total)} será notificada al gerente vía Gmail como venta prioritaria.`,
+          duration: 6000,
+        });
+      }, 500);
+    }
 
     // Reset form
     setFormData({
