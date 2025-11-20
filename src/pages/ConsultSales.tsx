@@ -225,6 +225,10 @@ export default function ConsultSales() {
   };
 
   const totalAmount = filteredSales.reduce((sum, sale) => sum + sale.total, 0);
+  
+  const HIGH_VOLUME_THRESHOLD = 3000000;
+  const prioritySales = filteredSales.filter(sale => sale.total > HIGH_VOLUME_THRESHOLD);
+  const regularSales = filteredSales.filter(sale => sale.total <= HIGH_VOLUME_THRESHOLD);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/20 p-4 md:p-6">
@@ -373,10 +377,85 @@ export default function ConsultSales() {
           </Card>
         </div>
 
+        {/* Priority Sales Section */}
+        {prioritySales.length > 0 && (
+          <Card className="border-destructive/50 shadow-lg bg-destructive/5 backdrop-blur-sm">
+            <CardHeader className="bg-destructive/10">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <span className="text-destructive">⚠️</span>
+                Ventas Prioritarias (Alto Volumen)
+                <span className="ml-2 px-3 py-1 bg-destructive text-destructive-foreground text-sm rounded-full">
+                  {prioritySales.length}
+                </span>
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Ventas con valor superior a {formatCurrency(HIGH_VOLUME_THRESHOLD)} que requieren atención especial
+              </p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="rounded-lg border border-destructive/30 overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-destructive/10">
+                      <TableHead className="font-semibold">Producto</TableHead>
+                      <TableHead className="font-semibold">Cliente</TableHead>
+                      <TableHead className="font-semibold text-right">Cantidad</TableHead>
+                      <TableHead className="font-semibold text-right">Precio Unitario</TableHead>
+                      <TableHead className="font-semibold text-right">Total</TableHead>
+                      <TableHead className="font-semibold text-center">Fecha</TableHead>
+                      <TableHead className="font-semibold text-center">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {prioritySales.map((sale) => (
+                      <TableRow key={sale.id} className="hover:bg-destructive/5 transition-colors">
+                        <TableCell className="font-medium">{sale.product}</TableCell>
+                        <TableCell className="text-muted-foreground">{sale.customer}</TableCell>
+                        <TableCell className="text-right">{sale.quantity}</TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(sale.unitPrice)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold text-destructive">
+                          {formatCurrency(sale.total)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {format(new Date(sale.date), "dd/MM/yyyy")}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-2">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleEditClick(sale)}
+                              className="h-8 w-8 hover:bg-primary/10 hover:text-primary"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              onClick={() => handleDeleteClick(sale)}
+                              className="h-8 w-8 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Results Table */}
         <Card className="border-border/50 shadow-lg bg-card/80 backdrop-blur-sm">
           <CardHeader>
-            <CardTitle className="text-xl">Resultados de la Consulta</CardTitle>
+            <CardTitle className="text-xl">
+              {prioritySales.length > 0 ? "Otras Ventas" : "Resultados de la Consulta"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-lg border border-border/50 overflow-hidden">
@@ -393,8 +472,8 @@ export default function ConsultSales() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredSales.length > 0 ? (
-                    filteredSales.map((sale) => (
+                  {regularSales.length > 0 ? (
+                    regularSales.map((sale) => (
                       <TableRow key={sale.id} className="hover:bg-muted/30 transition-colors">
                         <TableCell className="font-medium">{sale.product}</TableCell>
                         <TableCell className="text-muted-foreground">{sale.customer}</TableCell>
@@ -433,7 +512,9 @@ export default function ConsultSales() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        No se encontraron ventas con los filtros aplicados
+                        {prioritySales.length > 0 
+                          ? "Todas las ventas encontradas son de alto volumen (ver sección prioritaria arriba)"
+                          : "No se encontraron ventas con los filtros aplicados"}
                       </TableCell>
                     </TableRow>
                   )}
