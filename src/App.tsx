@@ -10,7 +10,8 @@ import ConsultPurchases from "./pages/ConsultPurchases";
 import CreateSale from "./pages/CreateSale";
 import ConsultSales from "./pages/ConsultSales";
 import RolePermissionsControl from "./pages/RolePermissionsControl";
-import Login from "./pages/Login";
+import Transactions from "./pages/Transactions";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import { useEffect } from "react";
 
@@ -32,14 +33,15 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Login route - no layout */}
-            <Route path="/login" element={<Login />} />
+            {/* Auth route - no layout */}
+            <Route path="/auth" element={<Auth />} />
             
             {/* Main app routes - with layout */}
             <Route path="/*" element={
               <PetManagerLayout>
                 <Routes>
                   <Route path="/" element={<PetManagerDashboard />} />
+                  <Route path="/transacciones" element={<Transactions />} />
                   <Route path="/crear-compra" element={<CreatePurchase />} />
                   <Route path="/consultar-compras" element={<ConsultPurchases />} />
                   <Route path="/crear-venta" element={<CreateSale />} />

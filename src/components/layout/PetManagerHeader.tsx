@@ -13,11 +13,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogoutConfirmDialog } from "./LogoutConfirmDialog";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 export function PetManagerHeader() {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const navigate = useNavigate();
+  const { user, signOut, isAdmin } = useAuth();
 
   useEffect(() => {
     // Check if dark mode is enabled on mount
@@ -32,9 +35,23 @@ export function PetManagerHeader() {
     localStorage.setItem('theme', newMode ? 'dark' : 'light');
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const { error } = await signOut();
     setShowLogoutDialog(false);
-    navigate("/login");
+    
+    if (error) {
+      toast({
+        title: 'Error',
+        description: 'No se pudo cerrar sesión',
+        variant: 'destructive',
+      });
+    } else {
+      toast({
+        title: 'Sesión cerrada',
+        description: 'Has cerrado sesión correctamente',
+      });
+      navigate("/auth");
+    }
   };
 
   return (
@@ -78,7 +95,10 @@ export function PetManagerHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                <span className="font-roboto">Admin</span>
+                <span className="font-roboto">
+                  {user?.email?.split('@')[0] || 'Usuario'}
+                  {isAdmin && ' (Admin)'}
+                </span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48 bg-card border-border shadow-lg">
