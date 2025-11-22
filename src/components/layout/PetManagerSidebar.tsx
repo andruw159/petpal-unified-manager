@@ -7,7 +7,8 @@ import {
   Heart,
   PawPrint,
   Home,
-  ShoppingBag
+  ShoppingBag,
+  Receipt
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -24,6 +25,7 @@ import {
 
 const menuItems = [
   { title: "Dashboard", url: "/", icon: Home },
+  { title: "Transacciones", url: "/transacciones", icon: Receipt },
   { title: "Consultar Ventas", url: "/consultar-ventas", icon: ShoppingCart },
   { title: "Crear Venta", url: "/crear-venta", icon: ShoppingCart },
   { title: "Consultar Compras", url: "/consultar-compras", icon: ShoppingBag },
