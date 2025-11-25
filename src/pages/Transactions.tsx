@@ -6,9 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Pencil, CheckCircle, XCircle, Clock, Eye, Plus } from 'lucide-react';
+import { Pencil, CheckCircle, XCircle, Clock, Eye } from 'lucide-react';
 import { TransactionEditDialog } from '@/components/transactions/TransactionEditDialog';
-import { TransactionCreateDialog } from '@/components/transactions/TransactionCreateDialog';
 import { toast } from '@/hooks/use-toast';
 import { Navigate } from 'react-router-dom';
 
@@ -35,7 +34,6 @@ const Transactions = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [filter, setFilter] = useState<'all' | TransactionStatus>('all');
 
   useEffect(() => {
@@ -142,17 +140,11 @@ const Transactions = () => {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold font-poppins mb-2">Transacciones</h1>
-          <p className="text-muted-foreground">
-            Gestiona todas las transacciones de ventas y compras
-          </p>
-        </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nueva Transacción
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold font-poppins mb-2">Transacciones</h1>
+        <p className="text-muted-foreground">
+          Gestiona todas las transacciones de ventas y compras
+        </p>
       </div>
 
       {/* Stats Cards */}
@@ -291,12 +283,6 @@ const Transactions = () => {
           onSuccess={fetchTransactions}
         />
       )}
-
-      <TransactionCreateDialog
-        open={showCreateDialog}
-        onClose={() => setShowCreateDialog(false)}
-        onSuccess={fetchTransactions}
-      />
     </div>
   );
 };
