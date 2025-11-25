@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,41 +19,11 @@ interface Purchase {
   id: string;
   product: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   total: number;
-  date: string;
-  supplier: string;
+  created_at: string;
+  client_name: string;
 }
-
-const mockRecentPurchases: Purchase[] = [
-  {
-    id: "1",
-    product: "Alimento Premium para Perro Royal Canin 15kg",
-    quantity: 12,
-    unitPrice: 180000,
-    total: 2160000,
-    date: "2024-01-15",
-    supplier: "Pet Supply Co."
-  },
-  {
-    id: "2",
-    product: "Juguete Kong Classic Mediano",
-    quantity: 24,
-    unitPrice: 45000,
-    total: 1080000,
-    date: "2024-01-12",
-    supplier: "Mascotas Premium"
-  },
-  {
-    id: "3",
-    product: "Collar LED Recargable para Perro",
-    quantity: 18,
-    unitPrice: 35000,
-    total: 630000,
-    date: "2024-01-10",
-    supplier: "Distribuidora Animal Care"
-  }
-];
 
 const suppliers = [
   "Pet Supply Co.",
@@ -63,6 +35,9 @@ const suppliers = [
 
 export default function CreatePurchase() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [recentPurchases, setRecentPurchases] = useState<Purchase[]>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     product: "",
     quantity: "",
@@ -70,6 +45,29 @@ export default function CreatePurchase() {
     supplier: "",
     date: undefined as Date | undefined
   });
+
+  useEffect(() => {
+    if (user) {
+      fetchRecentPurchases();
+    }
+  }, [user]);
+
+  const fetchRecentPurchases = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('transaction_type', 'purchase')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      
+      setRecentPurchases(data || []);
+    } catch (error) {
+      console.error('Error fetching recent purchases:', error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -79,7 +77,7 @@ export default function CreatePurchase() {
     setFormData(prev => ({ ...prev, date }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.product || !formData.quantity || !formData.unitPrice || !formData.supplier || !formData.date) {
@@ -91,20 +89,62 @@ export default function CreatePurchase() {
       return;
     }
 
-    // Simulate saving purchase
-    toast({
-      title: "Compra creada",
-      description: `Compra de ${formData.product} registrada exitosamente`,
-    });
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para crear compras",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    // Reset form
-    setFormData({
-      product: "",
-      quantity: "",
-      unitPrice: "",
-      supplier: "",
-      date: undefined
-    });
+    try {
+      setLoading(true);
+      
+      const quantity = parseFloat(formData.quantity);
+      const unitPrice = parseFloat(formData.unitPrice);
+      const total = quantity * unitPrice;
+
+      const { error } = await supabase.from('transactions').insert({
+        user_id: user.id,
+        transaction_type: 'purchase',
+        client_name: formData.supplier,
+        product: formData.product,
+        quantity: quantity,
+        unit_price: unitPrice,
+        total: total,
+        payment_method: 'Por definir',
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Compra creada",
+        description: `Compra de ${formData.product} registrada exitosamente`,
+      });
+
+      // Reset form
+      setFormData({
+        product: "",
+        quantity: "",
+        unitPrice: "",
+        supplier: "",
+        date: undefined
+      });
+
+      // Refresh recent purchases
+      fetchRecentPurchases();
+    } catch (error) {
+      console.error('Error creating purchase:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la compra",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -259,12 +299,13 @@ export default function CreatePurchase() {
 
                   {/* Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                    <Button
-                      type="submit"
-                      className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                      Guardar Compra
-                    </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    {loading ? 'Guardando...' : 'Guardar Compra'}
+                  </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -298,8 +339,15 @@ export default function CreatePurchase() {
                         <TableHead className="font-semibold text-foreground">Fecha</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
-                      {mockRecentPurchases.map((purchase) => (
+                  <TableBody>
+                    {recentPurchases.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
+                          No hay compras recientes
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      recentPurchases.map((purchase) => (
                         <TableRow key={purchase.id} className="hover:bg-muted/50 transition-colors">
                           <TableCell className="font-medium text-foreground">
                             {purchase.product}
@@ -311,11 +359,12 @@ export default function CreatePurchase() {
                             {formatCurrency(purchase.total)}
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
-                            {format(new Date(purchase.date), "dd/MM/yyyy")}
+                            {format(new Date(purchase.created_at), "dd/MM/yyyy")}
                           </TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
+                      ))
+                    )}
+                  </TableBody>
                   </Table>
                 </div>
               </CardContent>

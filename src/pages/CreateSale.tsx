@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,20 +19,11 @@ interface Sale {
   id: string;
   product: string;
   quantity: number;
-  unitPrice: number;
+  unit_price: number;
   total: number;
-  date: string;
-  customer: string;
+  created_at: string;
+  client_name: string;
 }
-
-const getStoredSales = (): Sale[] => {
-  try {
-    const stored = localStorage.getItem('sales');
-    return stored ? JSON.parse(stored) : [];
-  } catch {
-    return [];
-  }
-};
 
 const customers = [
   "Carlos Rodríguez",
@@ -42,7 +35,9 @@ const customers = [
 
 export default function CreateSale() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [recentSales, setRecentSales] = useState<Sale[]>([]);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     product: "",
     quantity: "",
@@ -52,9 +47,27 @@ export default function CreateSale() {
   });
 
   useEffect(() => {
-    const sales = getStoredSales();
-    setRecentSales(sales.slice(0, 3));
-  }, []);
+    if (user) {
+      fetchRecentSales();
+    }
+  }, [user]);
+
+  const fetchRecentSales = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('transaction_type', 'sale')
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      
+      setRecentSales(data || []);
+    } catch (error) {
+      console.error('Error fetching recent sales:', error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -64,7 +77,7 @@ export default function CreateSale() {
     setFormData(prev => ({ ...prev, date }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.product || !formData.quantity || !formData.unitPrice || !formData.customer || !formData.date) {
@@ -76,53 +89,74 @@ export default function CreateSale() {
       return;
     }
 
-    const total = calculateTotal();
-    const HIGH_VOLUME_THRESHOLD = 3000000;
-
-    // Create new sale
-    const newSale: Sale = {
-      id: Date.now().toString(),
-      product: formData.product,
-      quantity: parseFloat(formData.quantity),
-      unitPrice: parseFloat(formData.unitPrice),
-      total: total,
-      date: format(formData.date, "yyyy-MM-dd"),
-      customer: formData.customer
-    };
-
-    // Save to localStorage
-    const existingSales = getStoredSales();
-    const updatedSales = [newSale, ...existingSales];
-    localStorage.setItem('sales', JSON.stringify(updatedSales));
-    
-    // Update recent sales display
-    setRecentSales(updatedSales.slice(0, 3));
-
-    // Success message
-    toast({
-      title: "Venta creada",
-      description: `Venta de ${formData.product} registrada exitosamente`,
-    });
-
-    // Check if it's a high-volume sale and show additional notification
-    if (total > HIGH_VOLUME_THRESHOLD) {
-      setTimeout(() => {
-        toast({
-          title: "⚠️ Venta de Alto Volumen Detectada",
-          description: `Esta venta por valor de ${formatCurrency(total)} será notificada al gerente vía Gmail como venta prioritaria.`,
-          duration: 6000,
-        });
-      }, 500);
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "Debes iniciar sesión para crear ventas",
+        variant: "destructive"
+      });
+      return;
     }
 
-    // Reset form
-    setFormData({
-      product: "",
-      quantity: "",
-      unitPrice: "",
-      customer: "",
-      date: undefined
-    });
+    try {
+      setLoading(true);
+      
+      const quantity = parseFloat(formData.quantity);
+      const unitPrice = parseFloat(formData.unitPrice);
+      const total = quantity * unitPrice;
+      const HIGH_VOLUME_THRESHOLD = 3000000;
+
+      const { error } = await supabase.from('transactions').insert({
+        user_id: user.id,
+        transaction_type: 'sale',
+        client_name: formData.customer,
+        product: formData.product,
+        quantity: quantity,
+        unit_price: unitPrice,
+        total: total,
+        payment_method: 'Por definir',
+        status: 'pending'
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Venta creada",
+        description: `Venta de ${formData.product} registrada exitosamente`,
+      });
+
+      // Check if it's a high-volume sale and show additional notification
+      if (total > HIGH_VOLUME_THRESHOLD) {
+        setTimeout(() => {
+          toast({
+            title: "⚠️ Venta de Alto Volumen Detectada",
+            description: `Esta venta por valor de ${formatCurrency(total)} será notificada al gerente vía Gmail como venta prioritaria.`,
+            duration: 6000,
+          });
+        }, 500);
+      }
+
+      // Reset form
+      setFormData({
+        product: "",
+        quantity: "",
+        unitPrice: "",
+        customer: "",
+        date: undefined
+      });
+
+      // Refresh recent sales
+      fetchRecentSales();
+    } catch (error) {
+      console.error('Error creating sale:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo crear la venta",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCancel = () => {
@@ -277,12 +311,13 @@ export default function CreateSale() {
 
                   {/* Buttons */}
                   <div className="flex flex-col sm:flex-row gap-4 pt-6">
-                    <Button
-                      type="submit"
-                      className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                      Guardar Venta
-                    </Button>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="flex-1 h-12 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-lg rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
+                  >
+                    {loading ? 'Guardando...' : 'Guardar Venta'}
+                  </Button>
                     <Button
                       type="button"
                       variant="outline"
@@ -336,7 +371,7 @@ export default function CreateSale() {
                             {formatCurrency(sale.total)}
                           </TableCell>
                           <TableCell className="text-muted-foreground text-sm">
-                            {format(new Date(sale.date), "dd/MM/yyyy")}
+                            {format(new Date(sale.created_at), "dd/MM/yyyy")}
                           </TableCell>
                         </TableRow>
                       )))}
